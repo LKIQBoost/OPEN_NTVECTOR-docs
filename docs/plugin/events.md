@@ -48,7 +48,7 @@ engine.trigger("MyEvent", my_dict)     # ❌ 回调收到 [[my_dict]]
 | `on_player_list` | 进入服务器后 | 参数：`[玩家列表]` |
 | `on_text` | 收到聊天栏消息后（`proton.py` 触发） | 参数：`[source_name, message, msg_type, parameters]` |
 | `on_disconnect` | 与服务器断开连接后 | — |
-| `on_rpc` | 收到远程调用后 | 内核事件，`init.py` 已处理 |
+| `on_rpc` | 收到远程调用后 | 内核事件，框架已处理（`ntvector/mcp_check.py`） |
 
 `on_command_output` 的返回值形如 `[[键, [参数...]], ...]`。
 

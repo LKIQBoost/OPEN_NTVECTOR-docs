@@ -54,6 +54,47 @@
 `vanilla.mcp/lib/` 若存在仍然优先）。
 :::
 
+## 框架模块划分
+
+`source/` **不是包**，只是一个被追加到 `sys.path` 的普通目录，`init.py` 以顶层模块
+`init` 的身份被 `PyRun_SimpleString("import init")` 加载。因此 `init.py` 里只能用
+**裸 import**（`from ntvector.plugins import ...`）；而 `ntvector/` 是真包，内部可以用相对 import。
+
+`init.py` 只保留启动编排与 kernel 事件注册，实现按职责拆到 `ntvector/`：
+
+| 模块 | 职责 | 关键符号 |
+| --- | --- | --- |
+| `init.py` | 入口：启动编排、kernel 事件注册、转发插件管理 API | `_on_start_game` · `_on_reload` |
+| `ntvector/common.py` | 日志工厂 + `umsgpack.compatibility` 全局开关 | `make_logger` · `LOG_INFO/WARN/ERROR` |
+| `ntvector/plugins.py` | 插件加载 / 重载 / 文件监视热重载 | `load_all_plugins` · `reload_plugin` · `start_watch` |
+| `ntvector/mcp_check.py` | RPC 反作弊校验 | `_on_rpc` · `_mcp_check_num` |
+| `ntvector/mcp_pack.py` | `.mcp` 打包工具（`--do_main mcp_compile`） | `pack_mcp` · `_do_mcp_compile` |
+| `ntvector/neox.py` | NeoXHash（`.mcp` 容器里的文件名 / 目录名哈希） | `neox_hash` |
+
+依赖是单向的，没有环：
+
+```text
+init.py ──→ ntvector.plugins ──→ ntvector.mcp_pack ──→ ntvector.neox
+   │               │                    │                   │
+   └───────────────┴────────────────────┴───────→ ntvector.common
+```
+
+::: tip `umsgpack.compatibility` 为什么放在 common.py
+它必须在**任何** `packb()` 之前生效，否则长度 > 31 字节的字符串会被打成 `str8`
+而不是 `raw16`，反作弊校验必然失败。集中放在 `common.py` 的模块级，而其他所有模块
+都导入它 —— 顺序就天然正确，不依赖谁先谁后。
+:::
+
+::: warning 不要往 `source/` 里放与插件同名的模块
+`sys.path` 中 `./source` 排在 `./scripts` **之前**。新建一个 `source/main.py` 这类文件，
+有很高的概率静默顶替同名插件，打断依赖它的其它插件。框架代码统一收进 `ntvector/`
+包内，就不会与插件名或原生模块名竞争。
+:::
+
+::: info 改 `source/` 下的文件需要重启
+文件监视器只 `os.walk(./scripts)`，`source/` 不参与热重载 —— 这一点在拆分前后没有变化。
+:::
+
 ## 模块注册（19 个）
 
 `PythonRuntime::initModules()` 逐个调用 `PyInit_*()` 创建模块，再由 `RegisterModule()`

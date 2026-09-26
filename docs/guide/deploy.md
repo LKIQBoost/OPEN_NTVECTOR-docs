@@ -11,9 +11,16 @@ Vector/
 ├── source/                ← 运行环境
 │   ├── Lib/               ← 标准库
 │   │   └── site-packages/ ← 第三方库装这里；含 umsgpack.py、RC4.py、chacha/、raknet/、*.pyi
-│   ├── init.py            ← 框架：加载插件 / 处理 RPC 反作弊校验
+│   ├── init.py            ← 框架入口：启动编排 + kernel 事件注册
 │   ├── proton.py          ← 解析数据包
-│   └── redirect.py        ← 遗留
+│   ├── logo.py            ← 启动面板（终端里的 NT VECTOR 字样）
+│   ├── redirect.py        ← 遗留，source 模式下不执行
+│   └── ntvector/          ← 框架实现（被 init.py 导入）
+│       ├── common.py      ← 日志与 umsgpack 全局开关
+│       ├── plugins.py     ← 插件加载 / 重载 / 文件监视
+│       ├── mcp_check.py   ← RPC 反作弊校验
+│       ├── mcp_pack.py    ← .mcp 打包工具
+│       └── neox.py        ← NeoXHash（.mcp 文件名哈希）
 ├── scripts/               ← 插件（每个插件一个目录）
 ├── VectorLauncher.exe
 ├── mc.cfg                 ← 启动配置（房间 / 账号 / 皮肤）

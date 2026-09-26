@@ -51,7 +51,7 @@ engine.register(_on_uninit, "ModEventUnInit")
 
 `on_uninit()` 的调用时机：
 
-- **单插件重载**：`init.py` 在注销事件前主动调用
+- **单插件重载**：框架（`ntvector/plugins.py`）在注销事件前主动调用
 - **全量重载**：通过 `ModEventUnInit` 事件通知
 
 ### 文件资源

@@ -68,7 +68,7 @@ engine.trigger("MyEvent", my_dict)     # ❌ 回调收到 [[my_dict]]
 | `on_player_list` | 进入服务器后 | `[玩家列表]` |
 | `on_text` | 收到聊天栏消息后（`proton.py` 触发） | `[source_name, message, msg_type, parameters]` |
 | `on_disconnect` | 与服务器断开连接后 | — |
-| `on_rpc` | 收到远程调用后 | 内核事件，`init.py` 已处理 |
+| `on_rpc` | 收到远程调用后 | 内核事件，框架已处理（`ntvector/mcp_check.py`） |
 
 `proton.py` 还会额外触发 `OnTextPacket` 高层事件，参数是 `[dict]`（与 `on_text`
 的 `[source_name, message, msg_type, parameters]` **不同**）。细节见
@@ -103,7 +103,7 @@ engine.register(on_plugin_a_ready, "PluginA_Ready")
 
 不用担心重复注册：
 
-- **单插件重载**：`init.py` 先精准注销该插件注册的所有事件，再重新执行插件代码
+- **单插件重载**：框架（`ntvector/plugins.py`）先精准注销该插件注册的所有事件，再重新执行插件代码
 - **全量重载**：`engine.cleanup_user()` 清空所有用户事件 +
   `engine.clear_all_user_protocol_event()` 清空用户协议事件
 

@@ -1,6 +1,6 @@
 # RPC 与反作弊校验
 
-服务器通过 `PyRpc` 包下发 `on_rpc` 事件，框架（`source/init.py`）负责响应。
+服务器通过 `PyRpc` 包下发 `on_rpc` 事件，框架（`source/ntvector/mcp_check.py`）负责响应。
 这条链**必须完整**，否则会被判定为「违规游戏行为」并踢下线。
 
 ## 三种 RPC
@@ -13,7 +13,8 @@
 
 ## MCP 校验链
 
-`GetMCPCheckNum` 的处理是整条链里最脆弱的部分，Py2 → Py3 迁移时**全是坑**：
+`GetMCPCheckNum` 的处理是整条链里最脆弱的部分，Py2 → Py3 迁移时**全是坑**。
+实现全部位于 `source/ntvector/mcp_check.py`：
 
 ```text
 _mcp_rotor_decrypt        ← rotor.decrypt + zlib + _mcp_reverse_data
@@ -26,6 +27,8 @@ SetMCPCheckNum            ← 回给服务器
 ::: danger 三个必须同时成立的条件
 1. **`umsgpack.compatibility = True`** —— 否则长度 > 31 字节的字符串会被打成
    `str8` 而不是 `raw16`，字节流与服务器期望的不一致，校验必然失败。
+   这一行在 `source/ntvector/common.py` 模块级执行，所有框架模块都导入它，
+   所以它必然先于任何 `packb()` 生效。
 2. **RC4 / `_mcp_reverse_data` / `_get_calc_check_num` 必须是 Py3 版本**
    （bytes / int 操作）—— 迁移时这三处都重写过。
 3. **`on_rpc` 事件必须以 bytes 传递** —— C++ 侧必须走 `triggerBytes`，
