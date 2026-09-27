@@ -4,7 +4,7 @@ layout: home
 hero:
   name: OPEN_NTVECTOR
   text: 标准网易我的世界机器人
-  tagline: C++17 客户端 · 静态嵌入 CPython 3.12 · 插件热重载 · 无需外部 Python DLL
+  tagline: C++17 客户端 · 静态嵌入 CPython 3.12 · 插件热重载
   actions:
     - theme: brand
       text: 快速开始
@@ -18,11 +18,11 @@ hero:
 
 features:
   - title: 自包含解释器
-    details: CPython 3.12.2 编译成静态库直接链进 Program.exe，运行时不需要 python312.dll —— 与 Python 2.7 时代形态一致。
+    details: CPython 3.12.2 编译成静态库直接链进 Program.exe，无需外部依赖。
   - title: 插件热重载
-    details: source 模式下每 1.5 秒扫描 scripts/ 变更，改完保存即生效，只重载被修改的那个插件。
+    details: source 模式下每 1.5 秒扫描 scripts/ 变更，改完保存即生效，只重载被修改的插件。
   - title: 四种网络后端
-    details: SLikeNet（RakNet 魔改）· libwebsockets · libdatachannel（WebRTC DataChannel）· NetherNet 直连。
+    details: SLikeNet · libwebsockets · libdatachannel（WebRTC DataChannel）· NetherNet 直连。
   - title: 加密与鉴权
     details: AES-GCM / CTR / ECB、ChaCha20、Rotor、ECC / ECDSA 密钥交换、Base64，以及网易 RPC 校验链。
   - title: 构建零联网
@@ -62,7 +62,7 @@ engine.register(on_start, "ModEventStartUp")
 | 项目 | 值 |
 | --- | --- |
 | 协议版本 | `ProtocolVersion = 860`（MCBE **1.21.120**） |
-| 内嵌 Python | **3.12.2**（静态链接，无外部 DLL） |
+| 内嵌 Python | **CPython 3.12.2**（静态链接，无外部 依赖） |
 | C++ 标准 | C++17 |
 | 主平台 | Windows（Visual Studio 2026 / MSVC x64） |
 | 构建系统 | CMake 4.x（最低 3.20） |
