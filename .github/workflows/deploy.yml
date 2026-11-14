@@ -35,6 +35,9 @@ jobs:
         run: npm run docs:build
 
       - uses: actions/configure-pages@v5
+        with:
+          # 仓库尚未开启 Pages 时，自动创建站点并把 Source 设为 GitHub Actions
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
