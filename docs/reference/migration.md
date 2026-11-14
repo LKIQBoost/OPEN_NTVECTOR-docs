@@ -45,7 +45,7 @@
 - **`umsgpack.compatibility = True`** —— 否则 > 31 字节的字符串会打成 `str8` 而不是
   `raw16`，反作弊校验必然失败
 - **RC4 / `_mcp_reverse_data` / `_get_calc_check_num`** —— 全部改成 Py3 的 bytes / int 操作
-- **`CommandBlockUpdate` 的 `filtered_name`** —— 1.21.120 协议必须带，缺失会被踢
+- **`CommandBlockUpdate` 的 `filtered_name`** —— 必须带，缺失会被踢（字段布局验证自 1.21.120，当前协议 898 / 1.21.130 仍然适用）
 
 ### Python 2 → 3 语法
 

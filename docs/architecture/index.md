@@ -42,7 +42,7 @@ exe 旁**没有** `python312.dll`。这与 Python 2.7 时代的形态一致（�
 | --- | --- | --- |
 | 登录链 | `application/Core/` | `LoginAuth` / `LoginSession` / `ConnectInstance` |
 | 数据包 | `application/Packets/` | `PacketBase` + 各协议包类 |
-| 回调分发 | `application/Core/CallbackManager.cpp` | 协议包 → Python 事件 |
+| 回调分发 | `application/Core/CallbackManger.cpp` | 协议包 → Python 事件 |
 | Python 运行时 | `application/Python/PythonRuntime.cpp` | 解释器初始化、19 个模块注册 |
 | 原生 API | `application/PythonAPI/` | pybind11 绑定（`nbt` / `packets` / `game_state`） |
 | 网络后端 | `application/Network/` | RakNet / WebSocket / WebRTC / NetherNet |

@@ -21,18 +21,18 @@ A: 不会。
 
 ### Q: `engine.trigger` 传 dict 但回调收到 list？
 
-A: C++ 层会把非 list/tuple 参数包成 `[arg]`。传 dict 请用 `[dict]` 包一层：
+A: `engine.trigger` 会把非 list/tuple 参数包成 `[arg]`，所以下面两种写法等价：
 
 ```python
 engine.trigger("MyEvent", [my_dict])        # ✅
-engine.trigger("MyEvent", my_dict)          # ❌ 回调收到 [[my_dict]]
+engine.trigger("MyEvent", my_dict)          # ✅
 ```
 
-回调：
+回调里 `args[0]` 都是 `my_dict`：
 
 ```python
 def handler(args):
-    data = args[0]      # 收到 my_dict
+    data = args[0]
 ```
 
 ### Q: 事件注册了但回调不触发？
@@ -40,9 +40,10 @@ def handler(args):
 A: 按这个顺序查：
 
 1. 用对注册函数了吗？（插件只能用 `engine.register`）
-2. `engine.trigger` 的第二个参数是 list/tuple 吗？非 list/tuple 会被**静默丢弃**，
-   没有报错。
-3. 事件名拼写是否完全一致？
+2. 回调是否至少接收 1 个位置参数？
+3. 事件名拼写和大小写是否完全一致？
+4. 协议事件第三个参数是否误传了 `True`？用户侧必须是 `False`。
+5. 查看 `log.txt` 里是否有回调 traceback。
 
 ### Q: 怎么发游戏指令？
 

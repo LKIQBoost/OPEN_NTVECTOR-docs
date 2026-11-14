@@ -149,6 +149,62 @@ def on_move_player(data):
 engine.register_protocol_event(0x13, on_move_player, False)
 ```
 
+## 使用原生接口
+
+### 读取 NBT
+
+```python
+import nbt
+
+document = nbt.loads(raw_nbt, "network_little_endian")
+root = document.GetRoot()
+name = root.Get("CustomName")
+if name is not None:
+    print(name.GetValue())
+```
+
+### 查询已确认的游戏状态
+
+```python
+import game_state
+
+player = game_state.get_local_player()
+if player is not None:
+    print(player["entity_runtime_id"], player["position"])
+
+for entry in game_state.get_players():
+    print(entry["username"])
+```
+
+### 发送 CommandRequest
+
+```python
+import os
+from packets import CommandOrigin, CommandRequest
+
+request = CommandRequest()
+request.SetCommand("say hello")
+request.SetCommandOrigin(CommandOrigin.Player)
+request.SetRandomUUID(os.urandom(16))
+request.Send()
+```
+
+### 结构化收包
+
+```python
+import engine
+
+def on_container(event):
+    if not event["parsed"]:
+        return
+    data = event["data"]
+    print(data["window_id"], data["position"])
+
+engine.register_structured_protocol_event(46, on_container)
+```
+
+更多字段见[原生模块速查](/api/native-modules)与[结构化协议事件](/api/structured-events)。
+
 ## MCP 打包发布（遗留）
 
 ::: danger 不要用 MCP 发布

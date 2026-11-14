@@ -61,7 +61,7 @@ engine.register(on_start, "ModEventStartUp")
 
 | 项目 | 值 |
 | --- | --- |
-| 协议版本 | `ProtocolVersion = 860`（MCBE **1.21.120**） |
+| 协议版本 | `ProtocolVersion = 898`（MCBE **1.21.130**） |
 | 内嵌 Python | **CPython 3.12.2**（静态链接，无外部 依赖） |
 | C++ 标准 | C++17 |
 | 主平台 | Windows（Visual Studio 2026 / MSVC x64） |

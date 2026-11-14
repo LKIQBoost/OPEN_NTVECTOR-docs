@@ -18,10 +18,13 @@
 msgpack 数据）必须走 `triggerBytes`，它把 bytes 包成 `[bytes]`。
 :::
 
-### 参数形状是硬约束
+### 参数形状是硬约束（仅限内部接口）
 
 `engine.cpp::trigger_event` **要求 args 是 list/tuple，否则静默丢弃** —— 回调根本不会触发，
-而且没有任何报错。这是排查「事件不响应」时的第一个怀疑对象。
+而且没有任何报错。这是 C++ 侧调用时必须遵守的规则。
+
+Python 侧的 `engine.trigger` 已经做了包装：非 list/tuple 会转成 `[obj]`，
+所以插件正常调用不会丢事件。
 
 ## Python 侧注册
 
@@ -49,30 +52,47 @@ engine.trigger("事件名", [a, b])      # 回调收到 [a, b]
 engine.trigger("事件名", some_obj)    # 非 list/tuple 会被包成 [some_obj]
 ```
 
-::: warning 传 dict 要自己包一层
+::: warning 传 dict 无需额外包装
 ```python
-engine.trigger("MyEvent", [my_dict])   # ✅ 回调收到 [my_dict]，args[0] 是 my_dict
-engine.trigger("MyEvent", my_dict)     # ❌ 回调收到 [[my_dict]]
+engine.trigger("MyEvent", [my_dict])   # 回调收到 [my_dict]，args[0] 是 my_dict
+engine.trigger("MyEvent", my_dict)     # 非 list/tuple，被包装成 [my_dict]，结果相同
 ```
 :::
 
-## 内置事件一览
+## 框架事件一览
+
+由 `source/` 下的 Python 框架触发：
 
 | 事件 | 触发时机 | 参数 |
 | --- | --- | --- |
-| `ModEventStartUp` | 所有插件加载完成后 | — |
-| `ModEventUnInit` | 全量重载前 | — |
-| `on_respawn` | 玩家死亡后 | — |
-| `on_move_player` | `/tp` 传送自身后 | `[x, y, z]` |
-| `on_command_output` | 发送指令后（`proton.py` 触发） | `[返回值, GUID]`，返回值形如 `[[键, [参数...]], ...]` |
-| `on_player_list` | 进入服务器后 | `[玩家列表]` |
-| `on_text` | 收到聊天栏消息后（`proton.py` 触发） | `[source_name, message, msg_type, parameters]` |
-| `on_disconnect` | 与服务器断开连接后 | — |
-| `on_rpc` | 收到远程调用后 | 内核事件，框架已处理（`ntvector/mcp_check.py`） |
+| `ModEventStartUp` | 所有插件加载完成后 | `[]` |
+| `ModEventUnInit` | 全量重载前 | `[]` |
+| `OnTextPacket` | 收到聊天 / 文本消息后（`proton.py`） | `[dict]` |
+| `on_text` | 收到聊天栏消息后（`proton.py`） | `[source_name, message, msg_type, parameters]` |
+| `on_command_output` | 发送指令后（`proton.py`） | `[返回值, GUID]`，返回值形如 `[[键, [参数...]], ...]` |
+| `on_rpc` | 收到远程调用后 | `[bytes]`，内核事件，框架已处理 |
 
-`proton.py` 还会额外触发 `OnTextPacket` 高层事件，参数是 `[dict]`（与 `on_text`
-的 `[source_name, message, msg_type, parameters]` **不同**）。细节见
-[协议数据包 · 聊天消息](/plugin/protocol#处理聊天消息)。
+## C++ 原生事件一览
+
+| 事件 | 触发时机 | 参数 |
+| --- | --- | --- |
+| `start_game` | 收到 `StartGame` 并完成初始化 | `[0]` |
+| `on_play_status` | 收到 `PlayStatus` | `[status]` |
+| `on_resource_packs_info` | 收到资源包信息 | `[0]` |
+| `on_player_list` | 收到 `PlayerList` | `[player_list:dict]` |
+| `TextParsed` | 收到 `Text` | `[type, source_name, message, parameters, xuid, platform_chat_id, filtered_message, needs_translation]` |
+| `CommandOutputParsed` | 收到 `CommandOutput` | `[messages, guid, output_type, success_count, data_set]` |
+| `on_move_player` | 本地玩家移动被服务器确认 | `[x, y, z]` |
+| `on_respawn` | 收到 `Respawn` | `[state, entity_runtime_id]` |
+| `on_disconnect` | 收到 `Disconnect` | `[reason]` |
+| `on_disconnect_event` | 收到 `Disconnect` 并主动断开 | `[reason]` |
+| `on_authentication_result` | 登录鉴权返回 | `[status, decrypted]` |
+| `on_start_ready` | 客户端启动完成 | `[]` |
+| `on_init_uni_sdk` | 初始化 UniSDK | `[]` |
+| `unisdk_start_up` | UniSDK 启动 | `[code, sauth_json]` |
+
+网络后端还会触发 RakNet / WebSocket / NetherNet 事件，完整列表见
+[事件系统 · 网络后端事件](/plugin/events#网络后端事件)。
 
 ## 事件分发顺序
 
